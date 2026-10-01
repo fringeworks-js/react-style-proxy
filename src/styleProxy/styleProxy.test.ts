@@ -256,11 +256,11 @@ describe('styleProxy', () => {
           value: 'abc',
           onChange,
           css: [
+            { borderColor: '#0000ff' },
             {
               color: '#ff0000',
               backgroundColor: '#00ff00',
             },
-            { borderColor: '#0000ff' },
           ],
         });
       });
@@ -318,11 +318,11 @@ describe('styleProxy', () => {
           value: 'abc',
           onChange,
           sx: [
+            { borderColor: '#0000ff' },
             {
               color: '#ff0000',
               backgroundColor: '#00ff00',
             },
-            { borderColor: '#0000ff' },
           ],
         });
       });
@@ -426,19 +426,19 @@ describe('styleProxy', () => {
         onChange,
         any: [
           {
-            color: '#ff0000',
-            backgroundColor: '#00ff00',
+            borderColor: '#0000ff',
           },
           {
-            borderColor: '#0000ff',
+            color: '#ff0000',
+            backgroundColor: '#00ff00',
           },
         ],
       });
     });
   });
 
-  describe('styleOverrides', () => {
-    it('true & styleApplyMod=`merge`', () => {
+  describe('styleAsDefault', () => {
+    it('未設定', () => {
       const styledProps = styleProxy(
         {
           ...props,
@@ -448,7 +448,6 @@ describe('styleProxy', () => {
           },
         },
         style,
-        { styleMergeMode: 'merge', styleOverrides: true },
       );
       expect(styledProps).toEqual({
         value: 'abc',
@@ -461,7 +460,7 @@ describe('styleProxy', () => {
       });
     });
 
-    it('false & styleApplyMod=`merge`', () => {
+    it('false & styleMergeMode=`merge`', () => {
       const styledProps = styleProxy(
         {
           ...props,
@@ -471,7 +470,30 @@ describe('styleProxy', () => {
           },
         },
         style,
-        { styleMergeMode: 'merge', styleOverrides: false },
+        { styleMergeMode: 'merge', styleAsDefault: false },
+      );
+      expect(styledProps).toEqual({
+        value: 'abc',
+        onChange,
+        style: {
+          color: '#ff0000',
+          backgroundColor: '#00ff00',
+          borderColor: '#0000ff',
+        },
+      });
+    });
+
+    it('true & styleMergeMode=`merge`', () => {
+      const styledProps = styleProxy(
+        {
+          ...props,
+          style: {
+            borderColor: '#0000ff',
+            backgroundColor: '#ffffff',
+          },
+        },
+        style,
+        { styleMergeMode: 'merge', styleAsDefault: true },
       );
       expect(styledProps).toEqual({
         value: 'abc',
@@ -484,7 +506,7 @@ describe('styleProxy', () => {
       });
     });
 
-    it('true & styleApplyMod=`append` & object', () => {
+    it('false & styleMergeMode=`append` & object', () => {
       const styledProps = styleProxy(
         {
           ...props,
@@ -493,7 +515,7 @@ describe('styleProxy', () => {
           },
         },
         style,
-        { styleMergeMode: 'append', styleOverrides: true },
+        { styleMergeMode: 'append', styleAsDefault: false },
       );
       expect(styledProps).toEqual({
         value: 'abc',
@@ -510,7 +532,7 @@ describe('styleProxy', () => {
       });
     });
 
-    it('false & styleApplyMod=`append` & object', () => {
+    it('true & styleMergeMode=`append` & object', () => {
       const styledProps = styleProxy(
         {
           ...props,
@@ -519,7 +541,7 @@ describe('styleProxy', () => {
           },
         },
         style,
-        { styleMergeMode: 'append', styleOverrides: false },
+        { styleMergeMode: 'append', styleAsDefault: true },
       );
       expect(styledProps).toEqual({
         value: 'abc',
@@ -536,7 +558,7 @@ describe('styleProxy', () => {
       });
     });
 
-    it('true & styleApplyMod=`append` & array', () => {
+    it('false & styleMergeMode=`append` & array', () => {
       const styledProps = styleProxy(
         {
           ...props,
@@ -547,7 +569,7 @@ describe('styleProxy', () => {
           ],
         },
         style,
-        { styleMergeMode: 'append', styleOverrides: true },
+        { styleMergeMode: 'append', styleAsDefault: false },
       );
       expect(styledProps).toEqual({
         value: 'abc',
@@ -564,7 +586,7 @@ describe('styleProxy', () => {
       });
     });
 
-    it('false & styleApplyMod=`append` & array', () => {
+    it('true & styleMergeMode=`append` & array', () => {
       const styledProps = styleProxy(
         {
           ...props,
@@ -575,7 +597,7 @@ describe('styleProxy', () => {
           ],
         },
         style,
-        { styleMergeMode: 'append', styleOverrides: false },
+        { styleMergeMode: 'append', styleAsDefault: true },
       );
       expect(styledProps).toEqual({
         value: 'abc',
