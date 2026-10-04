@@ -1,6 +1,6 @@
-# @niche-works/react-style-proxy
+# @fringeworks/react-style-proxy
 
-`@niche-works/react-style-proxy` is a niche library for applying styles to the style property of React components, whether it is `style`, `css` or `sx`.
+`@fringeworks/react-style-proxy` is a niche library for applying styles to the style property of React components, whether it is `style`, `css` or `sx`.
 
 **[日本語のREADMEはこちら](./README.ja.md)**
 
@@ -17,7 +17,7 @@ Both work with plain `style` as well as with the `css` / `sx` props of CSS-in-JS
 ## Installation
 
 ```sh
-npm install @niche-works/react-style-proxy
+npm install @fringeworks/react-style-proxy
 ```
 
 ## Usage
@@ -25,7 +25,7 @@ npm install @niche-works/react-style-proxy
 ### Applying to the value of a style property
 
 ```tsx
-import { applyStyle } from '@niche-works/react-style-proxy';
+import { applyStyle } from '@fringeworks/react-style-proxy';
 
 function Box(props: BoxProps) {
   return <div {...props} style={applyStyle(props.style, { padding: 8 })} />;
@@ -48,7 +48,7 @@ Falsy values are ignored, so conditional styles can be written as they are.
 Use `styleProxy` when the name of the style property is decided at runtime, such as in a HOC.
 
 ```tsx
-import { styleProxy } from '@niche-works/react-style-proxy';
+import { styleProxy } from '@fringeworks/react-style-proxy';
 
 function withPadding(Component, options) {
   return (props) => (

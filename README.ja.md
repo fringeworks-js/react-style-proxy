@@ -1,6 +1,6 @@
-# @niche-works/react-style-proxy
+# @fringeworks/react-style-proxy
 
-`@niche-works/react-style-proxy` は React コンポーネントのスタイルプロパティ（`style` / `css` / `sx` など）へスタイルを適用するためのニッチなライブラリです。
+`@fringeworks/react-style-proxy` は React コンポーネントのスタイルプロパティ（`style` / `css` / `sx` など）へスタイルを適用するためのニッチなライブラリです。
 
 **[English README is available here](./README.md)**
 
@@ -17,7 +17,7 @@
 ## インストール
 
 ```sh
-npm install @niche-works/react-style-proxy
+npm install @fringeworks/react-style-proxy
 ```
 
 ## 使い方
@@ -25,7 +25,7 @@ npm install @niche-works/react-style-proxy
 ### スタイルプロパティの値へ適用する
 
 ```tsx
-import { applyStyle } from '@niche-works/react-style-proxy';
+import { applyStyle } from '@fringeworks/react-style-proxy';
 
 function Box(props: BoxProps) {
   return <div {...props} style={applyStyle(props.style, { padding: 8 })} />;
@@ -48,7 +48,7 @@ falsy な値は無視されるため、条件付きのスタイルをそのま�
 HOC などでスタイルプロパティの名前が実行時に決まる場合は `styleProxy` を使います。
 
 ```tsx
-import { styleProxy } from '@niche-works/react-style-proxy';
+import { styleProxy } from '@fringeworks/react-style-proxy';
 
 function withPadding(Component, options) {
   return (props) => (
