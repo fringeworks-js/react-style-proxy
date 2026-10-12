@@ -1,6 +1,6 @@
 # @fringeworks/react-style-proxy
 
-`@fringeworks/react-style-proxy` is a niche library for applying styles to the style property of React components, whether it is `style`, `css` or `sx`.
+`@fringeworks/react-style-proxy` is a library some will find handy, for applying styles to the style property of React components, whether it is `style`, `css` or `sx`.
 
 **[日本語のREADMEはこちら](./README.ja.md)**
 

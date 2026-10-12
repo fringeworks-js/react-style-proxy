@@ -1,6 +1,6 @@
 # @fringeworks/react-style-proxy
 
-`@fringeworks/react-style-proxy` は React コンポーネントのスタイルプロパティ（`style` / `css` / `sx` など）へスタイルを適用するためのニッチなライブラリです。
+`@fringeworks/react-style-proxy` は React コンポーネントのスタイルプロパティ（`style` / `css` / `sx` など）へスタイルを適用するための、誰かにとっては便利なライブラリです。
 
 **[English README is available here](./README.md)**
 
