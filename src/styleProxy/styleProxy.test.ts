@@ -1,7 +1,7 @@
 import styleProxy from './styleProxy';
 
 describe('styleProxy', () => {
-  const onChange = (...args) => {
+  const onChange = (...args: unknown[]) => {
     console.log(args);
   };
   const props = {
