@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import applyStyle from './applyStyle';
 
 describe('applyStyle', () => {
@@ -30,8 +31,32 @@ describe('applyStyle', () => {
       ]);
     });
 
-    it('オブジェクト、配列以外', () => {
-      expect(applyStyle(123, style)).toEqual(style);
+    it('false', () => {
+      expect(applyStyle(false, style)).toEqual(style);
+    });
+
+    it('true', () => {
+      expect(applyStyle(true, style)).toEqual(style);
+    });
+
+    it('オブジェクト、配列、関数、boolean 以外', () => {
+      expect(applyStyle(123, style)).toEqual([123, style]);
+    });
+
+    it('オブジェクト、配列、関数、boolean 以外 & styleAsDefault', () => {
+      expect(applyStyle('abc', style, { styleAsDefault: true })).toEqual([
+        style,
+        'abc',
+      ]);
+    });
+
+    it('target を変更しない', () => {
+      const object = { borderColor: '#0000ff' };
+      const array = [{ borderColor: '#0000ff' }];
+      applyStyle(object, style);
+      applyStyle(array, style);
+      expect(object).toEqual({ borderColor: '#0000ff' });
+      expect(array).toEqual([{ borderColor: '#0000ff' }]);
     });
 
     it('function', () => {
@@ -191,6 +216,72 @@ describe('applyStyle', () => {
         style,
         target,
       ]);
+    });
+
+    describe('true & style が配列', () => {
+      const styles = [
+        { color: '#ff0000', opacity: 0.5 },
+        { color: '#00ff00', backgroundColor: '#000000' },
+      ];
+
+      it('target が undefined', () => {
+        expect(applyStyle(undefined, styles, { styleAsDefault: true })).toEqual(
+          {
+            color: '#00ff00',
+            opacity: 0.5,
+            backgroundColor: '#000000',
+          },
+        );
+      });
+
+      it('target が object', () => {
+        expect(applyStyle(target, styles, { styleAsDefault: true })).toEqual({
+          color: '#00ff00',
+          opacity: 0.5,
+          backgroundColor: '#ffffff',
+          borderColor: '#0000ff',
+        });
+      });
+
+      it('target が array', () => {
+        expect(applyStyle([target], styles, { styleAsDefault: true })).toEqual([
+          ...styles,
+          target,
+        ]);
+      });
+
+      it('styleMergeMode=`append` & target が object', () => {
+        expect(
+          applyStyle(target, styles, {
+            styleMergeMode: 'append',
+            styleAsDefault: true,
+          }),
+        ).toEqual([...styles, target]);
+      });
+    });
+  });
+
+  describe('型', () => {
+    it('merge & オブジェクトの target', () => {
+      const target: CSSProperties | undefined = undefined;
+      expectTypeOf(applyStyle(target, style)).toEqualTypeOf<
+        CSSProperties | undefined
+      >();
+    });
+
+    it('append', () => {
+      expectTypeOf(
+        applyStyle({ color: '#ff0000' } as CSSProperties, style, {
+          styleMergeMode: 'append',
+        }),
+      ).toEqualTypeOf<CSSProperties | CSSProperties[]>();
+    });
+
+    it('boolean を含む target', () => {
+      const target = false as CSSProperties | false;
+      expectTypeOf(applyStyle(target, style)).toEqualTypeOf<
+        false | CSSProperties | CSSProperties[]
+      >();
     });
   });
 });

@@ -1,9 +1,9 @@
+import type { CSSProperties } from 'react';
 import styleProxy from './styleProxy';
+import type { StyleProxyOptions } from './types';
 
 describe('styleProxy', () => {
-  const onChange = (...args: unknown[]) => {
-    console.log(args);
-  };
+  const onChange = () => {};
   const props = {
     value: 'abc',
     onChange,
@@ -22,7 +22,7 @@ describe('styleProxy', () => {
       });
     });
 
-    it('スタイルプロパティがオブジェクト、配列以外', () => {
+    it('スタイルプロパティが関数 & 空のスタイル', () => {
       const styleFn = () => {
         return {
           borderColor: '#0000ff',
@@ -53,28 +53,6 @@ describe('styleProxy', () => {
         value: 'abc',
         onChange,
         style: {
-          borderColor: '#0000ff',
-        },
-      });
-    });
-
-    it('object', () => {
-      const styledProps = styleProxy(
-        {
-          ...props,
-          style: {
-            borderColor: '#0000ff',
-          },
-        },
-        style,
-        { styleProp: 'style' },
-      );
-      expect(styledProps).toEqual({
-        value: 'abc',
-        onChange,
-        style: {
-          color: '#ff0000',
-          backgroundColor: '#00ff00',
           borderColor: '#0000ff',
         },
       });
@@ -160,28 +138,6 @@ describe('styleProxy', () => {
       });
 
       it('object', () => {
-        const styledProps = styleProxy(
-          {
-            ...props,
-            style: {
-              borderColor: '#0000ff',
-            },
-          },
-          style,
-          { styleProp: 'style' },
-        );
-        expect(styledProps).toEqual({
-          value: 'abc',
-          onChange,
-          style: {
-            color: '#ff0000',
-            backgroundColor: '#00ff00',
-            borderColor: '#0000ff',
-          },
-        });
-      });
-
-      it('object (設定済み)', () => {
         const styledProps = styleProxy(
           {
             ...props,
@@ -627,8 +583,70 @@ describe('styleProxy', () => {
       expect(styledProps).toEqual({
         value: 'abc',
         onChange,
+        style: [123, style],
+      });
+    });
+
+    it('props[styleProp]がfalse', () => {
+      const styledProps = styleProxy(
+        {
+          ...props,
+          style: false,
+        },
+        style,
+      );
+      expect(styledProps).toEqual({
+        value: 'abc',
+        onChange,
         style,
       });
+    });
+  });
+
+  describe('props', () => {
+    it('スタイルプロパティが無く、適用するスタイルも空ならキーを追加しない', () => {
+      const styledProps = styleProxy(props, [null, false]);
+      expect(styledProps).not.toBe(props);
+      expect(styledProps).not.toHaveProperty('style');
+    });
+
+    it('props を変更しない', () => {
+      const original = { ...props, style: { borderColor: '#0000ff' } };
+      styleProxy(original, style);
+      expect(original).toEqual({ ...props, style: { borderColor: '#0000ff' } });
+    });
+  });
+
+  describe('型', () => {
+    type Props = { value: string; style?: CSSProperties };
+    const typedProps: Props = { value: 'abc' };
+
+    it('merge', () => {
+      const result = styleProxy(typedProps, style);
+      expectTypeOf(result.value).toEqualTypeOf<string>();
+      expectTypeOf(result.style).toEqualTypeOf<CSSProperties | undefined>();
+    });
+
+    it('append', () => {
+      const result = styleProxy(typedProps, style, {
+        styleMergeMode: 'append',
+      });
+      expectTypeOf(result.style).toEqualTypeOf<
+        CSSProperties | CSSProperties[] | undefined
+      >();
+    });
+
+    it('props に無い styleProp', () => {
+      const result = styleProxy(typedProps, style, { styleProp: 'sx' });
+      expectTypeOf(result.sx).toEqualTypeOf<CSSProperties | undefined>();
+      expectTypeOf(result.style).toEqualTypeOf<CSSProperties | undefined>();
+    });
+
+    it('styleProp が string 型', () => {
+      const options: StyleProxyOptions = { styleProp: 'style' };
+      expectTypeOf(
+        styleProxy(typedProps, style, options),
+      ).toEqualTypeOf<Props>();
     });
   });
 });

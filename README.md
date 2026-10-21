@@ -61,60 +61,81 @@ const PaddedBox = withPadding(Box, { styleProp: 'sx' });
 
 ## API
 
-### `applyStyle(target, style, options?)`
+| Function                              | Description                                     |
+| ------------------------------------- | ----------------------------------------------- |
+| `applyStyle(target, style, options?)` | Applies styles to the value of a style property |
+| `styleProxy(props, style, options?)`  | Applies styles to the style property in props   |
+
+### `applyStyle`
+
+```ts
+applyStyle<T extends CSSProperties | null | undefined>(target: T, style: StyleValue, options?: ApplyStyleOptions & { styleMergeMode?: 'merge' }): T | CSSProperties
+applyStyle<T>(target: T, style: StyleValue, options?: ApplyStyleOptions): ApplyStyleResult<T>
+```
 
 Applies `style` to `target` (the value of a style property) and returns the result.\
 `target` itself is not modified.
 
-| Parameter | Type                                      | Description                       |
-| --------- | ----------------------------------------- | --------------------------------- |
-| `target`  | any                                       | The current value of the property |
-| `style`   | `StyleItem \| StyleItem[]`                | The styles to apply               |
-| `options` | [`ApplyStyleOptions`](#applystyleoptions) | Options                           |
-
-`StyleItem` is `CSSProperties | false | null | undefined`.\
-When an array is given, its elements are applied in order.
+| Parameter  | Type                | Description                                                                                                                     |
+| ---------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `target`   | `T`                 | The current value of the property                                                                                               |
+| `style`    | `StyleValue`        | The styles to apply. For an array, the elements are applied in order and later ones take precedence. Falsy elements are ignored |
+| `options?` | `ApplyStyleOptions` | The options below                                                                                                               |
 
 The result depends on `target`.
 
-| `target`             | Result                                                              |
-| -------------------- | ------------------------------------------------------------------- |
-| `null` / `undefined` | `style`                                                             |
-| Array / Function     | An array with `style` added                                         |
-| Object               | Merged into an object (or an array with `styleMergeMode: 'append'`) |
-| Others               | Replaced with `style`                                               |
+| `target`                         | Result                                                              |
+| -------------------------------- | ------------------------------------------------------------------- |
+| `null` / `undefined` / `boolean` | `style`                                                             |
+| Object                           | Merged into an object (or an array with `styleMergeMode: 'append'`) |
+| Array / Function / other values  | An array with `style` added                                         |
 
-A function `target`, such as the function form of `sx` (`(theme) => ({ ... })`), is kept as an element of the array, so it is not lost. The array is created regardless of `styleMergeMode`.\
+Functions such as the function form of `sx` (`(theme) => ({ ... })`), and values such as strings and numbers, are kept as elements of the array, so they are not lost. The array is created regardless of `styleMergeMode`.\
+A `boolean` is assumed to be the `false` of `cond && style`, and is replaced with `style`.\
 When `style` is falsy or empty, `target` is returned as it is.
 
-### `styleProxy(props, style, options?)`
-
-Applies `style` to `props[styleProp]` with `applyStyle` and returns new props.\
-`props` itself is not modified.
-
-| Parameter | Type                                      | Description         |
-| --------- | ----------------------------------------- | ------------------- |
-| `props`   | object                                    | Component props     |
-| `style`   | `StyleItem \| StyleItem[]`                | The styles to apply |
-| `options` | [`StyleProxyOptions`](#styleproxyoptions) | Options             |
-
-### `ApplyStyleOptions`
-
-| Option           | Type                  | Default   | Description                                                                                                                          |
-| ---------------- | --------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `styleMergeMode` | `'merge' \| 'append'` | `'merge'` | How to combine with an object `target`.<br>`'merge'`: merge the properties into one object<br>`'append'`: combine them into an array |
-| `styleAsDefault` | `boolean`             | `false`   | Treats `style` as default values.<br>`false`: `style` overrides `target`<br>`true`: `target` takes precedence over `style`           |
+| Option            | Type             | Description                                                                                                                                                           |
+| ----------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `styleMergeMode?` | `StyleMergeMode` | How to combine with an object `target`. `'merge'`: merge the properties into one object, `'append'`: combine them into an array. Defaults to `'merge'`                |
+| `styleAsDefault?` | `boolean`        | Treats `style` as default values, so `target` takes precedence over `style`. Within an array of `style`, later elements still take precedence, as without this option |
 
 When merging objects, properties whose value is `undefined` are treated as not specified, and the value on the other side is used.\
 When combining into an array, the element with precedence is placed last.
 
-### `StyleProxyOptions`
+### `styleProxy`
 
-All options of `ApplyStyleOptions`, and the following.
+```ts
+styleProxy<P extends object, K extends string = 'style'>(props: P, style: StyleValue, options?: StyleProxyOptions<K> & { styleMergeMode?: 'merge' }): StyleProxyResult<P, K, 'merge'>
+styleProxy<P extends object, K extends string = 'style'>(props: P, style: StyleValue, options?: StyleProxyOptions<K>): StyleProxyResult<P, K>
+```
 
-| Option      | Type     | Default   | Description                          |
-| ----------- | -------- | --------- | ------------------------------------ |
-| `styleProp` | `string` | `'style'` | The name of the property to apply to |
+Applies `style` to `props[styleProp]` with `applyStyle` and returns new props.\
+`props` itself is not modified. When there are no styles to apply, the `styleProp` property is not added.
+
+| Parameter  | Type                   | Description                                    |
+| ---------- | ---------------------- | ---------------------------------------------- |
+| `props`    | `P`                    | Component props                                |
+| `style`    | `StyleValue`           | The styles to apply (same as `applyStyle`)     |
+| `options?` | `StyleProxyOptions<K>` | The options of `applyStyle`, and the one below |
+
+| Option       | Type | Description                                                 |
+| ------------ | ---- | ----------------------------------------------------------- |
+| `styleProp?` | `K`  | The name of the property to apply to. Defaults to `'style'` |
+
+The return type is `props` with the type of the `styleProp` property replaced by the result of applying the styles. With `'merge'` and an object value, it stays `CSSProperties`; when the value can become an array, the type includes the array.\
+When the name of `styleProp` is not known at the type level, such as when a `string` variable is passed, the return type is `P` as it is.
+
+### Types
+
+| Type                        | Description                                                                              |
+| --------------------------- | ---------------------------------------------------------------------------------------- |
+| `StyleValue`                | The styles to apply (`StyleItem \| StyleItem[]`)                                         |
+| `StyleItem`                 | An element of the styles to apply (`CSSProperties \| false \| null \| undefined`)        |
+| `StyleMergeMode`            | How to combine with an object `target` (`'merge' \| 'append'`)                           |
+| `ApplyStyleOptions`         | Options of `applyStyle`                                                                  |
+| `ApplyStyleResult<T>`       | The return type of `applyStyle`                                                          |
+| `StyleProxyOptions<K>`      | Options of `styleProxy`                                                                  |
+| `StyleProxyResult<P, K, M>` | The return type of `styleProxy` (`P` with the type of the `styleProp` property replaced) |
 
 ## Notes
 

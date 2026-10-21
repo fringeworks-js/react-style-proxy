@@ -10,7 +10,7 @@ import type {
  * スタイルプロパティ（style / css / sx など）の値へスタイルを適用する。
  *
  * @param target - スタイルプロパティの値
- * @param style - 適用したいスタイル（単一 or 配列）
+ * @param style - 適用したいスタイル（単一 or 配列。配列は後ろの要素が優先される）
  * @param options - マージ動作のオプション
  */
 export default function applyStyle<T extends CSSProperties | null | undefined>(
@@ -29,10 +29,12 @@ export default function applyStyle(
   options: ApplyStyleOptions = {},
 ): unknown {
   if (Array.isArray(style)) {
-    return style.reduce(
-      (result, stl) => _applyStyle(result, stl, options),
-      target,
-    );
+    const apply = (result: unknown, stl: StyleItem) =>
+      _applyStyle(result, stl, options);
+    // デフォルト値として扱う場合は、後ろの要素ほど target の近くに置くため逆順に適用する
+    return options.styleAsDefault
+      ? style.reduceRight(apply, target)
+      : style.reduce(apply, target);
   }
   return _applyStyle(target, style, options);
 }
@@ -52,16 +54,10 @@ function _applyStyle(
     return target;
   }
 
-  if (target == null) {
-    // 未設定ならそのまま返す
+  if (target == null || typeof target === 'boolean') {
+    // 未設定（`cond && style` の false を含む）ならそのまま返す
     return incoming;
-  } else if (Array.isArray(target)) {
-    // target が配列の場合は常に配列で結合する
-    return _concatStyles(incoming, target, styleAsDefault);
-  } else if (typeof target === 'function') {
-    // target が関数の場合（sx / css の関数形式など）は配列で結合する
-    return _concatStyles(incoming, target, styleAsDefault);
-  } else if (typeof target === 'object') {
+  } else if (typeof target === 'object' && !Array.isArray(target)) {
     if (styleMergeMode === 'append') {
       // 明示的に配列結合を指定された場合
       return _concatStyles(incoming, target, styleAsDefault);
@@ -71,8 +67,8 @@ function _applyStyle(
     }
   }
 
-  // target が予期しない型の場合は incoming で上書き
-  return incoming;
+  // 配列・関数（sx / css の関数形式など）・その他の値は、失わないよう配列で結合する
+  return _concatStyles(incoming, target, styleAsDefault);
 }
 
 /**
@@ -93,11 +89,10 @@ function _mergeStyleObjects(
     ? [existing, incoming]
     : [incoming, existing];
   // primary を base にして、secondary の「primaryにないキー」だけを補完
-  const merged = { ...primary };
-  for (const key in secondary) {
-    if (merged[key as keyof CSSProperties] === undefined) {
-      (merged as Record<string, unknown>)[key] =
-        secondary[key as keyof CSSProperties];
+  const merged: Record<string, unknown> = { ...primary };
+  for (const key of Object.keys(secondary)) {
+    if (merged[key] === undefined) {
+      merged[key] = secondary[key as keyof CSSProperties];
     }
   }
   return merged;
@@ -108,7 +103,7 @@ function _mergeStyleObjects(
  * styleAsDefault に応じて配列の順序を決定する（後ろの要素が優先される想定）。
  *
  * @param incoming - 新しく適用したいスタイル
- * @param existing - すでに設定されているスタイル（配列 / オブジェクト / 関数）
+ * @param existing - すでに設定されているスタイル（配列 / オブジェクト / 関数など）
  * @param styleAsDefault - true なら incoming を配列の先頭に置く
  */
 function _concatStyles(

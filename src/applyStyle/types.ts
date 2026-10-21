@@ -32,6 +32,8 @@ export type StyleMergeMode = 'merge' | 'append';
 
 /**
  * マージしたいスタイル
+ *
+ * 配列の場合は要素を順に適用し、後ろの要素が優先される。
  */
 export type StyleValue = StyleItem | StyleItem[];
 
@@ -47,11 +49,12 @@ export type StyleItem = CSSProperties | false | null | undefined;
  * applyStyle の戻り値
  *
  * 配列で結合した場合は、target の要素（target が配列でなければ target 自体）と
- * 適用したスタイルからなる配列になる。
+ * 適用したスタイルからなる配列になる。boolean の target は置き換えられるため含まない。
  */
 export type ApplyStyleResult<T> =
   | T
   | CSSProperties
   | Array<
-      CSSProperties | (T extends readonly (infer E)[] ? E : NonNullable<T>)
+      | CSSProperties
+      | (T extends readonly (infer E)[] ? E : Exclude<NonNullable<T>, boolean>)
     >;

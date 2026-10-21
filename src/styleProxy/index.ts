@@ -1,2 +1,2 @@
-export { default } from './styleProxy';
+export { default, default as styleProxy } from './styleProxy';
 export type * from './types';
