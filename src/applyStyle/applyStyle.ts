@@ -76,6 +76,10 @@ function _applyStyle(
  * styleAsDefault に応じて上書き方向を決定する。
  * 値が undefined のキーは未指定として扱い、もう一方の値で補完する。
  *
+ * スタイルはキーの並び順に反映されるため、優先する側のキーをすべて後ろに並べる。
+ * 省略形（`border` など）と個別指定（`borderColor` など）のようにキーが異なる場合も、
+ * 優先する側の指定が勝つ。
+ *
  * @param incoming - 新しく適用したいスタイル
  * @param existing - すでに設定されているスタイル
  * @param styleAsDefault - true なら existing を優先する
@@ -88,11 +92,17 @@ function _mergeStyleObjects(
   const [primary, secondary] = styleAsDefault
     ? [existing, incoming]
     : [incoming, existing];
-  // primary を base にして、secondary の「primaryにないキー」だけを補完
-  const merged: Record<string, unknown> = { ...primary };
-  for (const key of Object.keys(secondary)) {
-    if (merged[key] === undefined) {
-      merged[key] = secondary[key as keyof CSSProperties];
+  const merged: Record<string, unknown> = {};
+  // 優先しない側は、優先する側が指定していないキーだけを先に並べる
+  for (const key of Object.keys(secondary) as (keyof CSSProperties)[]) {
+    if (primary[key] === undefined) {
+      merged[key] = secondary[key];
+    }
+  }
+  // 優先する側を後ろに並べる
+  for (const key of Object.keys(primary) as (keyof CSSProperties)[]) {
+    if (primary[key] !== undefined) {
+      merged[key] = primary[key];
     }
   }
   return merged;

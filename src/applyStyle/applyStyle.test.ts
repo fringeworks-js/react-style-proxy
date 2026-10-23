@@ -261,6 +261,52 @@ describe('applyStyle', () => {
     });
   });
 
+  describe('キーの並び順（merge）', () => {
+    it('false: style のキーを後ろに並べる', () => {
+      const result = applyStyle(
+        { borderColor: 'blue', color: 'green' },
+        { border: '1px solid red' },
+      );
+      expect(Object.keys(result)).toEqual(['borderColor', 'color', 'border']);
+    });
+
+    it('true: target のキーを後ろに並べる', () => {
+      const result = applyStyle(
+        { borderColor: 'blue' },
+        { border: '1px solid red', color: 'green' },
+        { styleAsDefault: true },
+      );
+      expect(Object.keys(result)).toEqual(['border', 'color', 'borderColor']);
+    });
+
+    it('両方にあるキーは優先する側の位置に並べる', () => {
+      const result = applyStyle(
+        { overflowY: 'hidden', overflow: 'visible' },
+        { overflow: 'auto', overflowX: 'scroll' },
+        { styleAsDefault: true },
+      );
+      expect(result).toEqual({
+        overflowX: 'scroll',
+        overflowY: 'hidden',
+        overflow: 'visible',
+      });
+      expect(Object.keys(result)).toEqual([
+        'overflowX',
+        'overflowY',
+        'overflow',
+      ]);
+    });
+
+    it('優先する側の値が undefined のキーは優先しない側の位置に並べる', () => {
+      const result = applyStyle(
+        { overflowY: undefined, color: 'green' },
+        { overflow: 'auto', overflowY: 'hidden' },
+        { styleAsDefault: true },
+      );
+      expect(Object.keys(result)).toEqual(['overflow', 'overflowY', 'color']);
+    });
+  });
+
   describe('型', () => {
     it('merge & オブジェクトの target', () => {
       const target: CSSProperties | undefined = undefined;

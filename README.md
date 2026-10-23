@@ -100,6 +100,7 @@ When `style` is falsy or empty, `target` is returned as it is.
 | `styleAsDefault?` | `boolean`        | Treats `style` as default values, so `target` takes precedence over `style`. Within an array of `style`, later elements still take precedence, as without this option |
 
 When merging objects, properties whose value is `undefined` are treated as not specified, and the value on the other side is used.\
+The properties with precedence are also placed last. Since styles are applied in the order of their properties, the side with precedence wins even when the property names differ, such as a shorthand (`border`) and a longhand (`borderColor`) (see [Notes](#mixing-shorthand-and-longhand-properties) for a limitation on re-rendering).\
 When combining into an array, the element with precedence is placed last.
 
 ### `styleProxy`
@@ -138,6 +139,24 @@ When the name of `styleProp` is not known at the type level, such as when a `str
 | `StyleProxyResult<P, K, M>` | The return type of `styleProxy` (`P` with the type of the `styleProp` property replaced) |
 
 ## Notes
+
+### Mixing shorthand and longhand properties
+
+Even when shorthand properties (such as `overflow`) and longhand properties (such as `overflowY`) are mixed, the side with precedence is applied on the first render and on re-renders where only values change.
+
+However, when a shorthand property is added or removed during a re-render, a longhand property may be overridden. React applies only the changed properties to the DOM, so a shorthand added later is applied after the longhand (React also warns about this in development).\
+This is a limitation of React and is not handled by this library. Use either shorthand or longhand properties consistently.
+
+```tsx
+// When isScrollable changes from false to true, overflow: auto is applied later and overflowY: hidden is lost
+<div
+  style={applyStyle(
+    { overflowY: 'hidden' },
+    isScrollable && { overflow: 'auto' },
+    { styleAsDefault: true },
+  )}
+/>
+```
 
 ### Values created with emotion's `css` function
 

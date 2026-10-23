@@ -1,6 +1,6 @@
 {
   "name": "@fringeworks/react-style-proxy",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "private": true,
   "description": "A library some will find handy, for applying styles to the style property of React components, whether it is style, css or sx.",
   "keywords": [

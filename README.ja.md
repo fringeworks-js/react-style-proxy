@@ -100,6 +100,7 @@ applyStyle<T>(target: T, style: StyleValue, options?: ApplyStyleOptions): ApplyS
 | `styleAsDefault?` | `boolean`        | `style` をデフォルト値として扱い、`target` を `style` より優先する。`style` の配列の中では、指定しない場合と同じく後ろの要素が優先される                 |
 
 オブジェクト同士をマージするとき、値が `undefined` のプロパティは未指定として扱い、もう一方の値を使います。\
+また、優先される側のプロパティを後ろに並べます。スタイルはプロパティの並び順に反映されるため、省略形（`border` など）と個別指定（`borderColor` など）のように名前が異なるプロパティでも、優先される側の指定が反映されます（再描画時の制約は[注意事項](#省略形と個別指定を組み合わせる場合)を参照）。\
 配列で結合するときは、優先される側を末尾に置きます。
 
 ### `styleProxy`
@@ -138,6 +139,24 @@ styleProxy<P extends object, K extends string = 'style'>(props: P, style: StyleV
 | `StyleProxyResult<P, K, M>` | `styleProxy` の戻り値（`styleProp` のプロパティを適用した結果の型にした `P`） |
 
 ## 注意事項
+
+### 省略形と個別指定を組み合わせる場合
+
+省略形（`overflow` など）と個別指定（`overflowY` など）を組み合わせても、初回の描画と、値だけが変わる再描画では優先される側の指定が反映されます。
+
+ただし、再描画の途中で省略形のプロパティが追加・削除される場合は、個別指定が上書きされることがあります。React は変わったプロパティだけを DOM に反映するため、後から追加された省略形が個別指定より後に反映されるからです（React も開発時に警告を出します）。\
+これは React の制約のため、このライブラリでは対応しません。省略形と個別指定のどちらかに揃えてください。
+
+```tsx
+// isScrollable が false → true に変わると、overflow: auto が後から反映され、overflowY: hidden が失われる
+<div
+  style={applyStyle(
+    { overflowY: 'hidden' },
+    isScrollable && { overflow: 'auto' },
+    { styleAsDefault: true },
+  )}
+/>
+```
 
 ### emotion の `css` 関数で作った値
 
