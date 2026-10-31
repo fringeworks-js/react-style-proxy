@@ -1,3 +1,4 @@
+import assignDefined from '@fringeworks/utils/object/assignDefined';
 import type { CSSProperties } from 'react';
 import type {
   ApplyStyleOptions,
@@ -92,20 +93,8 @@ function _mergeStyleObjects(
   const [primary, secondary] = styleAsDefault
     ? [existing, incoming]
     : [incoming, existing];
-  const merged: Record<string, unknown> = {};
-  // 優先しない側は、優先する側が指定していないキーだけを先に並べる
-  for (const key of Object.keys(secondary) as (keyof CSSProperties)[]) {
-    if (primary[key] === undefined) {
-      merged[key] = secondary[key];
-    }
-  }
-  // 優先する側を後ろに並べる
-  for (const key of Object.keys(primary) as (keyof CSSProperties)[]) {
-    if (primary[key] !== undefined) {
-      merged[key] = primary[key];
-    }
-  }
-  return merged;
+  // 優先する側の undefined でない値を、優先しない側の後ろに並べ直して重ねる
+  return assignDefined(secondary, primary, { moveToEnd: true });
 }
 
 /**
